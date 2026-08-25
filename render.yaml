@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ufmg-video-api
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build -w @ufmg/shared && npm run build -w @ufmg/server
+    startCommand: npm run start -w @ufmg/server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: MAX_PARTICIPANTS
+        value: 100
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false

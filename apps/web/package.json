@@ -1,0 +1,37 @@
+{
+  "name": "@ufmg/web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../node_modules/vite/bin/vite.js",
+    "build": "node ../../node_modules/typescript/bin/tsc -b && node ../../node_modules/vite/bin/vite.js build",
+    "preview": "node ../../node_modules/vite/bin/vite.js preview",
+    "typecheck": "node ../../node_modules/typescript/bin/tsc -b --pretty false",
+    "test": "node ../../node_modules/vitest/vitest.mjs",
+    "test:run": "node ../../node_modules/vitest/vitest.mjs run"
+  },
+  "dependencies": {
+    "@livekit/components-react": "2.9.24",
+    "@livekit/components-styles": "^1.1.6",
+    "@ufmg/config": "1.0.0",
+    "@ufmg/shared": "1.0.0",
+    "livekit-client": "2.22.0",
+    "lucide-react": "^0.575.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "jsdom": "^28.1.0",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3",
+    "vite": "8.2.2",
+    "vitest": "^3.2.4"
+  }
+}

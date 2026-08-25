@@ -1,0 +1,40 @@
+import { useEffect, useRef, useState } from 'react';
+import { ConnectionState, RoomEvent, type Room } from 'livekit-client';
+
+export type CallConnectionStatus =
+  'connecting' | 'connected' | 'reconnecting' | 'reconnected' | 'disconnected' | 'failed';
+
+export function useCallConnection(room: Room) {
+  const [status, setStatus] = useState<CallConnectionStatus>('connecting');
+  const restoredTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    const sync = () => {
+      if (room.state === ConnectionState.Connected) setStatus('connected');
+      else if (room.state === ConnectionState.Reconnecting) setStatus('reconnecting');
+      else if (room.state === ConnectionState.Disconnected) setStatus('disconnected');
+      else setStatus('connecting');
+    };
+    const onReconnecting = () => setStatus('reconnecting');
+    const onReconnected = () => {
+      setStatus('reconnected');
+      window.clearTimeout(restoredTimer.current);
+      restoredTimer.current = window.setTimeout(() => setStatus('connected'), 3_000);
+    };
+    const onDisconnected = () => setStatus('disconnected');
+    room.on(RoomEvent.ConnectionStateChanged, sync);
+    room.on(RoomEvent.Reconnecting, onReconnecting);
+    room.on(RoomEvent.Reconnected, onReconnected);
+    room.on(RoomEvent.Disconnected, onDisconnected);
+    sync();
+    return () => {
+      window.clearTimeout(restoredTimer.current);
+      room.off(RoomEvent.ConnectionStateChanged, sync);
+      room.off(RoomEvent.Reconnecting, onReconnecting);
+      room.off(RoomEvent.Reconnected, onReconnected);
+      room.off(RoomEvent.Disconnected, onDisconnected);
+    };
+  }, [room]);
+
+  return { status, markFailed: () => setStatus('failed') };
+}
