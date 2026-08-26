@@ -2,7 +2,7 @@ services:
   - type: web
     name: ufmg-video-api
     runtime: node
-    plan: starter
+    plan: free
     buildCommand: npm ci && npm run build -w @ufmg/shared && npm run build -w @ufmg/server
     startCommand: npm run start -w @ufmg/server
     healthCheckPath: /api/health
