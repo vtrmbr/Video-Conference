@@ -45,6 +45,7 @@ export function CallPage({ session, roomId, preferences, onLeave }: CallPageProp
   const nextToastId = useRef(0);
   const [toast, setToast] = useState<CallToastMessage>();
   const [connectionFailed, setConnectionFailed] = useState(false);
+
   const notify = useCallback((message: string, tone: ToastTone = 'danger', title?: string) => {
     nextToastId.current += 1;
     setToast({ id: nextToastId.current, message, tone, ...(title ? { title } : {}) });
@@ -64,6 +65,7 @@ export function CallPage({ session, roomId, preferences, onLeave }: CallPageProp
           peerConnectionTimeout: 15_000,
         });
         if (!active) return;
+
         await room.startAudio().catch(() => undefined);
         if (preferences.microphoneEnabled) {
           try {
@@ -199,9 +201,6 @@ function CallExperience({
         name: participant.name || 'Convidado',
         isAdmin: participant.attributes['ufmg.role'] === 'admin',
       })),
-    // LiveKit mutates participant objects in place, so the event-backed revision
-    // deliberately invalidates this snapshot.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [participantRevision, room],
   );
 
@@ -245,16 +244,19 @@ function CallExperience({
             : `${target.name} já estava com o microfone desligado.`,
           'Microfone atualizado',
         ],
+
         disable_camera: [
           result.affectedTracks > 0
             ? `A câmera de ${target.name} foi desligada.`
             : `${target.name} já estava com a câmera desligada.`,
           'Câmera atualizada',
         ],
+
         remove: [`${target.name} foi removido da chamada.`, 'Participante removido'],
         ban: [`${target.name} foi banido desta sala.`, 'Participante banido'],
         promote: [`${target.name} agora também pode administrar a sala.`, 'Admin concedido'],
       };
+
       notify(messages[action][0], 'neutral', messages[action][1]);
       setParticipantRevision((revision) => revision + 1);
     } catch (error) {
@@ -376,6 +378,7 @@ function CallExperience({
           </div>
         </div>
       </header>
+      
       <div className="absolute inset-x-0 bottom-0 top-16">
         {showStage ? (
           <VideoStage layout={thumbnailLayout} />

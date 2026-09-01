@@ -29,13 +29,16 @@ export function App() {
       if (!roomId) return;
       if (!background) setJoining(true);
       setJoinError(undefined);
+
       const previous = loadLastCall();
       const matchingPrevious = previous?.roomId === roomId ? previous : undefined;
       const identity =
         matchingPrevious?.participantIdentity ?? `guest_${crypto.randomUUID().replaceAll('-', '')}`;
+
       try {
         const ownerCredential = loadRoomOwnerCredential(roomId);
         const resumeCredential = matchingPrevious?.resumeCredential;
+
         const token = await requestJoinToken({
           roomName: roomId,
           participantName: preferences.name,
@@ -43,6 +46,7 @@ export function App() {
           ...(ownerCredential ? { ownerCredential } : {}),
           ...(resumeCredential ? { resumeCredential } : {}),
         });
+
         saveLastCall({
           roomId,
           participantIdentity: identity,
@@ -53,6 +57,7 @@ export function App() {
         });
         setApprovalPending(undefined);
         setSession({ token, preferences });
+
       } catch (error) {
         if (error instanceof ApiError && error.code === 'ADMISSION_PENDING') {
           saveLastCall({
@@ -65,10 +70,12 @@ export function App() {
           });
           setApprovalPending(preferences);
           setJoinError(undefined);
+
         } else {
           if (error instanceof ApiError && error.code === 'ADMISSION_DENIED') {
             setApprovalPending(undefined);
             markLastCallInactive(roomId);
+
           }
           setJoinError(error instanceof Error ? error.message : 'Não foi possível entrar na sala.');
         }
@@ -82,25 +89,30 @@ export function App() {
   useEffect(() => {
     if (!roomId) return;
     const previous = loadLastCall();
+
     if (previous?.active && previous.roomId === roomId) {
       const timer = window.setTimeout(() => void join(previous.preferences), 0);
       return () => window.clearTimeout(timer);
     }
+
   }, [join, roomId]);
 
   useEffect(() => {
     if (!approvalPending) return;
     let cancelled = false;
     let timer: number | undefined;
+
     const poll = async () => {
       await join(approvalPending, true);
       if (!cancelled) timer = window.setTimeout(() => void poll(), 3_000);
     };
+
     timer = window.setTimeout(() => void poll(), 2_000);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
+    
   }, [approvalPending, join]);
 
   if (!roomId) return <HomePage />;

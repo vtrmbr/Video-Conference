@@ -57,6 +57,7 @@ export async function buildApp(options: BuildAppOptions) {
     },
     methods: ['GET', 'POST', 'OPTIONS'],
   });
+  
   await app.register(rateLimit, {
     global: true,
     max: 120,

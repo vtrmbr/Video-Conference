@@ -76,9 +76,11 @@ export class LiveKitTokenIssuer implements TokenIssuer {
     for (const participant of participants) {
       this.reservations.delete(`${request.roomName}:${participant.identity}`);
     }
+
     const roomReservations = [...this.reservations.keys()].filter((key) =>
       key.startsWith(`${request.roomName}:`),
     ).length;
+
     const replacingParticipant = resumeIsValid && duplicateIsActive ? 1 : 0;
     if (
       participants.length - replacingParticipant + roomReservations >=
@@ -135,8 +137,6 @@ export class LiveKitTokenIssuer implements TokenIssuer {
       if (!this.roomInspector) return [];
       return await this.roomInspector.listParticipants(roomName);
     } catch (error) {
-      // A room is created lazily when its first participant joins. LiveKit returns
-      // not-found before that point; other service failures must remain visible.
       if (isNotFoundError(error)) return [];
       throw new AppError(
         'Não foi possível verificar a disponibilidade da sala.',

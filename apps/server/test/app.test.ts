@@ -68,6 +68,39 @@ describe('API', () => {
     ).toThrow(/MAX_PARTICIPANTS/);
   });
 
+  it('allows same-project Vercel deployment origins', async () => {
+    issue.mockResolvedValue({
+      serverUrl: 'wss://test.livekit.cloud',
+      participantToken: 'signed-token',
+      expiresIn: 600,
+      resumeCredential: 'resume-credential',
+      role: 'participant',
+    });
+    const vercelConfig = loadConfig({
+      NODE_ENV: 'test',
+      LIVEKIT_URL: 'wss://test.livekit.cloud',
+      LIVEKIT_API_KEY: 'test-key',
+      LIVEKIT_API_SECRET: 'test-secret-value',
+      WEB_ORIGIN: 'http://localhost:5173',
+      VERCEL_URL: 'video-conference-server-six.vercel.app',
+      LOG_LEVEL: 'silent',
+    });
+    const app = await buildApp({ config: vercelConfig, tokenIssuer: { issue }, logger: false });
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/token',
+      headers: { origin: 'https://video-conference-server-six.vercel.app' },
+      payload: {
+        roomName: 'ABCD1234',
+        participantName: 'Remote Guest',
+        participantIdentity: 'guest_12345678',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    await app.close();
+  });
+
   it('validates the token request', async () => {
     const app = await buildApp({ config, tokenIssuer: { issue }, logger: false });
     const response = await app.inject({

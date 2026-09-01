@@ -22,11 +22,18 @@ describe('LiveKitRoomService', () => {
     const credentials = new SessionCredentialService(config.livekitApiSecret);
     const created = credentials.createRoom(true);
     let room: Room | undefined;
-    const participants: ParticipantInfo[] = [
+    // const participants: ParticipantInfo[] = [
+    //   {
+    //     identity: 'guest_owner123',
+    //     tracks: [],
+    //   } as ParticipantInfo,
+    // ];
+
+    const participants: unknown[] = [
       {
         identity: 'guest_owner123',
         tracks: [],
-      } as ParticipantInfo,
+      } as unknown,
     ];
     const target = {
       identity: 'guest_target12',

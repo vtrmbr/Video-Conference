@@ -27,6 +27,9 @@ const envSchema = z.object({
   LIVEKIT_API_KEY: z.string().trim().default(''),
   LIVEKIT_API_SECRET: z.string().trim().default(''),
   WEB_ORIGIN: z.string().min(1).default('http://localhost:5173'),
+  VERCEL_URL: z.string().trim().default(''),
+  VERCEL_BRANCH_URL: z.string().trim().default(''),
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().trim().default(''),
   PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
   HOST: z.string().default('0.0.0.0'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
@@ -66,7 +69,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env) {
     livekitConfigured,
     livekitApiKey: parsed.data.LIVEKIT_API_KEY,
     livekitApiSecret: parsed.data.LIVEKIT_API_SECRET,
-    webOrigins: parsed.data.WEB_ORIGIN.split(',').map((origin) => origin.trim()),
+    webOrigins: collectWebOrigins(parsed.data),
     port: parsed.data.PORT,
     host: parsed.data.HOST,
     logLevel: parsed.data.LOG_LEVEL,
@@ -81,6 +84,29 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env) {
     meetingMode: parsed.data.MEETING_MODE,
     advancedNoiseFilterEnabled: parsed.data.ENABLE_ADVANCED_NOISE_FILTER,
   } as const;
+}
+
+function collectWebOrigins(source: {
+  WEB_ORIGIN: string;
+  VERCEL_URL: string;
+  VERCEL_BRANCH_URL: string;
+  VERCEL_PROJECT_PRODUCTION_URL: string;
+}) {
+  return [
+    ...source.WEB_ORIGIN.split(',').map((origin) => origin.trim()),
+    toHttpsOrigin(source.VERCEL_URL),
+    toHttpsOrigin(source.VERCEL_BRANCH_URL),
+    toHttpsOrigin(source.VERCEL_PROJECT_PRODUCTION_URL),
+  ].filter(
+    (origin, index, origins): origin is string =>
+      Boolean(origin) && origins.indexOf(origin) === index,
+  );
+}
+
+function toHttpsOrigin(hostname: string) {
+  const value = hostname.trim();
+  if (!value) return undefined;
+  return value.startsWith('http://') || value.startsWith('https://') ? value : `https://${value}`;
 }
 
 function isUrl(value: string) {

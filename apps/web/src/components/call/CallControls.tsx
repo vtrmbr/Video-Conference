@@ -39,18 +39,23 @@ export function CallControls({
   useEffect(() => {
     const update = () => setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener('fullscreenchange', update);
+
     return () => document.removeEventListener('fullscreenchange', update);
   }, []);
 
   async function toggle(kind: 'camera' | 'microphone' | 'screen', action: () => Promise<unknown>) {
     if (pendingAction) return;
     setPendingAction(kind);
+
     try {
       await action();
+
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Não foi possível alterar a mídia.';
+
       if (kind === 'screen' && isScreenShareCancellation(error)) {
         onError(message || 'Permission denied by user', 'neutral', 'Compartilhamento cancelado');
+
       } else {
         onError(message, 'danger', 'Não foi possível alterar a mídia');
       }
@@ -62,6 +67,7 @@ export function CallControls({
   async function toggleFullscreen() {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
+
       else await document.documentElement.requestFullscreen();
     } catch {
       onError('Tela cheia não está disponível neste navegador.', 'neutral', 'Tela cheia');
@@ -97,6 +103,7 @@ export function CallControls({
           <MicOff />
         )}
       </ControlButton>
+
       <ControlButton
         label={
           pendingAction === 'camera'
@@ -122,6 +129,7 @@ export function CallControls({
           <CameraOff />
         )}
       </ControlButton>
+
       <ControlButton
         label={
           pendingAction === 'screen'
@@ -148,9 +156,11 @@ export function CallControls({
           <MonitorUp />
         )}
       </ControlButton>
+
       <ControlButton label="Dispositivos" onClick={onSettings}>
         <Settings />
       </ControlButton>
+
       <ControlButton
         label={isFullscreen ? 'Sair da tela cheia' : 'Entrar em tela cheia'}
         className="hidden sm:flex"
@@ -159,6 +169,7 @@ export function CallControls({
       >
         {isFullscreen ? <Minimize /> : <Maximize />}
       </ControlButton>
+      
       <button
         aria-label="Sair da chamada"
         title="Sair da chamada"

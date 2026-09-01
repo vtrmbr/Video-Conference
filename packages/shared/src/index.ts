@@ -81,8 +81,10 @@ export function classifyNetworkQuality(metrics: NetworkMetrics): NetworkQuality 
 
   if (values.length === 0) return 'unknown';
 
-  // Loss and severe RTT/jitter spikes are call-breaking, so the worst measured
-  // signal caps an otherwise healthy average instead of being hidden by it.
+  // Apenas calcular a média é uma métrica ruim de qualidade de transmissão.
+  // Eu não quero que uma métrica ruim seja ofuscada por 4 boas, então defini que a média dos
+  // valores não pode ser muito maior do que a pior métrica.
+  // O valor 0.75 é arbitrário/experimental.
   const average = values.reduce((sum, score) => sum + score, 0) / values.length;
   const worst = Math.min(...values);
   const score = Math.min(average, worst + 0.75);

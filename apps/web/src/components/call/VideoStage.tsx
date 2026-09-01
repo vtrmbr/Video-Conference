@@ -82,9 +82,7 @@ export function VideoStage({ layout }: { layout: ThumbnailLayoutPreferences }) {
           if (publication.isSubscribed !== shouldSubscribe) {
             try {
               publication.setSubscribed(shouldSubscribe);
-            } catch {
-              // The room can disconnect while the visible page is changing.
-            }
+            } catch { }
           }
         }
       }

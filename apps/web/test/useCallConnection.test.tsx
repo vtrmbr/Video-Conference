@@ -44,4 +44,28 @@ describe('useCallConnection', () => {
     unmount();
     vi.useRealTimers();
   });
+
+  it('does not treat the initial disconnected state as an ended call', () => {
+    const fake = new FakeRoom();
+    fake.state = ConnectionState.Disconnected;
+
+    const room = fake as unknown as Room;
+    const { result } = renderHook(() => useCallConnection(room));
+
+    expect(result.current.status).toBe('connecting');
+
+    act(() => {
+      fake.state = ConnectionState.Connected;
+      fake.emit(RoomEvent.ConnectionStateChanged);
+    });
+
+    expect(result.current.status).toBe('connected');
+
+    act(() => {
+      fake.state = ConnectionState.Disconnected;
+      fake.emit(RoomEvent.Disconnected);
+    });
+
+    expect(result.current.status).toBe('disconnected');
+  });
 });
