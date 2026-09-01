@@ -3,6 +3,7 @@ import type { CallConnectionStatus } from '../../hooks/useCallConnection.js';
 
 export function ConnectionNotice({ status }: { status: CallConnectionStatus }) {
   if (status === 'connected') return null;
+
   const content = {
     connecting: [
       <LoaderCircle key="i" className="animate-spin" size={17} />,
@@ -26,6 +27,7 @@ export function ConnectionNotice({ status }: { status: CallConnectionStatus }) {
       'Não foi possível iniciar a chamada.',
     ],
   }[status];
+  
   return (
     <div
       role="status"

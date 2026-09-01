@@ -158,11 +158,13 @@ export class LiveKitRoomService implements RoomService {
       const activeRequests = policy.pending.filter(
         (request) => now - request.requestedAt < 30 * 60_000,
       );
+
       let changed = activeRequests.length !== policy.pending.length;
       policy.pending = activeRequests;
       const existing = policy.pending.find(
         (request) => request.participantIdentity === participantIdentity,
       );
+
       if (existing) {
         const currentName = participantName || 'Convidado';
         if (existing.participantName !== currentName) {
@@ -203,12 +205,14 @@ export class LiveKitRoomService implements RoomService {
     if (!policy.pending.some((request) => request.participantIdentity === targetIdentity)) {
       throw new AppError('Esta solicitação não está mais pendente.', 404, 'ADMISSION_NOT_FOUND');
     }
+
     policy.pending = policy.pending.filter(
       (request) => request.participantIdentity !== targetIdentity,
     );
     policy.approved = policy.approved.filter((identity) => identity !== targetIdentity);
     policy.denied = policy.denied.filter((identity) => identity !== targetIdentity);
     (decision === 'approve' ? policy.approved : policy.denied).push(targetIdentity);
+
     await this.client.updateRoomMetadata(roomName, JSON.stringify(policy));
   }
 
@@ -218,6 +222,7 @@ export class LiveKitRoomService implements RoomService {
       const rooms = await this.client.listRooms([roomName]);
       if (!rooms[0]) return { roomName, exists: false, active: false, participantCount: 0 };
       const participants = await this.client.listParticipants(roomName);
+
       return {
         roomName,
         exists: true,
@@ -255,6 +260,7 @@ export class LiveKitRoomService implements RoomService {
       if (!room) throw new AppError('A sala não está mais ativa.', 404, 'ROOM_NOT_FOUND');
       const policy = parsePolicy(room.metadata);
       const participants = await this.client.listParticipants(roomName);
+
       if (!participants.some((participant) => participant.identity === requesterIdentity)) {
         throw new AppError(
           'Você não está conectado a esta sala.',
@@ -269,6 +275,7 @@ export class LiveKitRoomService implements RoomService {
           'ADMIN_REQUIRED',
         );
       }
+
       const target = participants.find((participant) => participant.identity === targetIdentity);
       if (!target)
         throw new AppError('O participante já saiu da sala.', 404, 'PARTICIPANT_NOT_FOUND');
@@ -388,9 +395,7 @@ function parsePolicy(metadata: string): RoomPolicy {
           : [],
       };
     }
-  } catch {
-    // Older rooms can have empty or unrelated metadata; initialize safely.
-  }
+  } catch {}
   return {
     ...DEFAULT_POLICY,
     owners: [],

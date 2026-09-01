@@ -44,12 +44,15 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
 
   useEffect(() => {
     let active = true;
+
     const load = async () => {
       if (!navigator.mediaDevices?.enumerateDevices) {
         throw new Error('MediaDevices não está disponível.');
       }
+
       const all = await navigator.mediaDevices.enumerateDevices();
       if (active) setDevices(all);
+
     };
     void load().catch(() =>
       onError(
@@ -66,10 +69,14 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
           'Dispositivos alterados',
         ),
       );
+
     navigator.mediaDevices?.addEventListener('devicechange', handleDeviceChange);
+
     const handleActiveDevice = (kind: MediaDeviceKind, deviceId: string) =>
       setSelected((current) => ({ ...current, [kind]: deviceId }));
+
     room.on(RoomEvent.ActiveDeviceChanged, handleActiveDevice);
+
     return () => {
       active = false;
       navigator.mediaDevices?.removeEventListener('devicechange', handleDeviceChange);
@@ -84,9 +91,12 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
     const microphoneWasEnabled = room.localParticipant.isMicrophoneEnabled;
     setSwitching(kind);
     setSelected((current) => ({ ...current, [kind]: deviceId }));
+
     try {
       const switched = await room.switchActiveDevice(kind, deviceId, true);
+
       if (!switched) throw new Error('O navegador recusou o dispositivo selecionado.');
+
       saveDevicePreference(
         kind === 'videoinput' ? 'cameraId' : kind === 'audioinput' ? 'microphoneId' : 'speakerId',
         deviceId,
@@ -100,6 +110,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
         cameraWasEnabled,
         microphoneWasEnabled,
       );
+
       setSelected((current) => ({ ...current, [kind]: previousDeviceId ?? '' }));
       onError(
         restored
@@ -108,6 +119,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
         'danger',
         restored ? 'Troca de dispositivo desfeita' : 'Dispositivo indisponível',
       );
+
     } finally {
       setSwitching(undefined);
     }
@@ -118,12 +130,14 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
     setQuality(value);
     saveDevicePreference('preferredVideoQuality', value);
     const publication = room.localParticipant.getTrackPublication(Track.Source.Camera);
+
     try {
       await publication?.videoTrack?.restartTrack({
         resolution:
           value === '1080p' ? VideoPresets.h1080.resolution : VideoPresets.h720.resolution,
         frameRate: 30,
       });
+
     } catch {
       onError(
         'O hardware ou navegador não aceitou essa resolução. A qualidade anterior foi mantida.',
@@ -152,6 +166,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
             <LoaderCircle className="mr-2 animate-spin" size={17} /> Testando dispositivo…
           </div>
         )}
+
         <DeviceSelect
           label="Microfone"
           kind="audioinput"
@@ -160,6 +175,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
           disabled={Boolean(switching)}
           onChange={(kind, id) => void select(kind, id)}
         />
+
         <DeviceSelect
           label="Câmera"
           kind="videoinput"
@@ -168,6 +184,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
           disabled={Boolean(switching)}
           onChange={(kind, id) => void select(kind, id)}
         />
+
         <DeviceSelect
           label="Alto-falante"
           kind="audiooutput"
@@ -177,6 +194,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
           unsupportedMessage="Seleção não suportada neste navegador"
           onChange={(kind, id) => void select(kind, id)}
         />
+
         <label className="grid gap-2 text-sm text-zinc-300">
           Qualidade da câmera
           <select
@@ -188,6 +206,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
             <option value="1080p">1080p / 30 fps — rede rápida</option>
           </select>
         </label>
+
       </div>
       <section className="mt-6 border-t border-zinc-700/70 pt-5">
         <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-100">
@@ -209,6 +228,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
               <option value="right">À direita</option>
             </select>
           </label>
+
           <label className="grid gap-2 text-sm text-zinc-300">
             Tamanho
             <select
@@ -221,6 +241,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
               <option value="large">Grande — até 8 por página</option>
             </select>
           </label>
+
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-700 bg-zinc-900/70 p-3 text-sm text-zinc-300">
             <input
               type="checkbox"
@@ -235,6 +256,7 @@ export function DeviceSettings({ onClose, onError, layout, onLayoutChange }: Dev
               </span>
             </span>
           </label>
+          
         </div>
       </section>
     </aside>

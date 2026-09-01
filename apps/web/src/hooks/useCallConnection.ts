@@ -7,21 +7,31 @@ export type CallConnectionStatus =
 export function useCallConnection(room: Room) {
   const [status, setStatus] = useState<CallConnectionStatus>('connecting');
   const restoredTimer = useRef<number | undefined>(undefined);
+  const hasConnected = useRef(false);
 
   useEffect(() => {
     const sync = () => {
-      if (room.state === ConnectionState.Connected) setStatus('connected');
-      else if (room.state === ConnectionState.Reconnecting) setStatus('reconnecting');
-      else if (room.state === ConnectionState.Disconnected) setStatus('disconnected');
+      if (room.state === ConnectionState.Connected) {
+        hasConnected.current = true;
+        setStatus('connected');
+      } else if (room.state === ConnectionState.Reconnecting) setStatus('reconnecting');
+      else if (room.state === ConnectionState.Disconnected)
+        setStatus(hasConnected.current ? 'disconnected' : 'connecting');
       else setStatus('connecting');
     };
+
     const onReconnecting = () => setStatus('reconnecting');
+
     const onReconnected = () => {
+      hasConnected.current = true;
       setStatus('reconnected');
+
       window.clearTimeout(restoredTimer.current);
       restoredTimer.current = window.setTimeout(() => setStatus('connected'), 3_000);
     };
-    const onDisconnected = () => setStatus('disconnected');
+
+    const onDisconnected = () => setStatus(hasConnected ? 'disconnected' : 'connecting');
+
     room.on(RoomEvent.ConnectionStateChanged, sync);
     room.on(RoomEvent.Reconnecting, onReconnecting);
     room.on(RoomEvent.Reconnected, onReconnected);

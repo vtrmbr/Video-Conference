@@ -18,7 +18,7 @@ export function CameraPreview({ stream, cameraEnabled }: CameraPreviewProps) {
   }, [stream]);
 
   return (
-    <div className="relative aspect-video overflow-hidden rounded-2xl bg-zinc-950 ring-1 ring-zinc-800">
+    <div className="relative aspect-[3/4] sm:aspect-video overflow-hidden rounded-2xl bg-zinc-950 ring-1 ring-zinc-800">
       {stream && cameraEnabled ? (
         <video
           ref={ref}

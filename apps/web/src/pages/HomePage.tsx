@@ -47,10 +47,8 @@ export function HomePage() {
         {/* <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
           UFMG Video Conference
         </p> */}
-        {/* <h1 className="mt-2 text-3xl font-semibold">Uma chamada simples e confiável.</h1> */}
         <p className="mt-3 leading-relaxed text-zinc-400">
-          Crie uma sala e compartilhe o link. O convidado entra pelo navegador, sem conta e sem
-          instalação.
+          Crie uma sala e compartilhe o link.
         </p>
         {recentRoom && (
           <div className="mt-6 rounded-2xl border border-emerald-800/60 bg-emerald-950/25 p-4">
