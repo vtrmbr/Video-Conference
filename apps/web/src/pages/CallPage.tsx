@@ -1,5 +1,5 @@
-import { RoomAudioRenderer, RoomContext } from '@livekit/components-react';
-import { Headphones, Share2, ShieldCheck, UsersRound } from 'lucide-react';
+import { RoomAudioRenderer, RoomContext, useChat } from '@livekit/components-react';
+import { Headphones, MessageSquare, Share2, ShieldCheck, UsersRound } from 'lucide-react';
 import { ConnectionState, RoomEvent } from 'livekit-client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
@@ -10,6 +10,7 @@ import type {
 } from '@ufmg/shared';
 import { CallControls } from '../components/call/CallControls.js';
 import { CallToast, type CallToastMessage, type ToastTone } from '../components/call/CallToast.js';
+import { ChatPanel } from '../components/call/ChatPanel.js';
 import { ConnectionNotice } from '../components/call/ConnectionNotice.js';
 import { DeviceSettings } from '../components/call/DeviceSettings.js';
 import {
@@ -158,6 +159,8 @@ function CallExperience({
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [managementOpen, setManagementOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const { chatMessages, send: sendChatMessage, isSending: isSendingChatMessage } = useChat();
   const [participantRevision, setParticipantRevision] = useState(0);
   const [pendingAdmissions, setPendingAdmissions] = useState<PendingAdmission[]>([]);
   const [audioBlocked, setAudioBlocked] = useState(false);
@@ -171,6 +174,9 @@ function CallExperience({
     saveThumbnailLayoutPreferences(layout);
   }, []);
   useKeyboardShortcuts(toggleDiagnostics);
+
+  const toggleChat = useCallback(() => setChatOpen((open) => !open), []);
+
 
   useEffect(() => {
     const update = () => setAudioBlocked(!room.canPlaybackAudio);
@@ -365,6 +371,15 @@ function CallExperience({
           <button
             type="button"
             className="ui-motion flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-xs font-medium text-zinc-200 hover:border-zinc-500 hover:bg-zinc-800"
+            aria-label="Chat"
+            title="Chat"
+            onClick={toggleChat}
+          >
+            <MessageSquare size={15} />
+          </button>
+          <button
+            type="button"
+            className="ui-motion flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-xs font-medium text-zinc-200 hover:border-zinc-500 hover:bg-zinc-800"
             onClick={() => void shareCall()}
           >
             <Share2 size={15} />
@@ -427,6 +442,14 @@ function CallExperience({
       )}
       {diagnosticsOpen && (
         <DiagnosticsPanel snapshot={snapshot} onClose={() => setDiagnosticsOpen(false)} />
+      )}
+      {chatOpen && (
+        <ChatPanel
+          messages={chatMessages}
+          send={sendChatMessage}
+          isSending={isSendingChatMessage}
+          onClose={() => setChatOpen(false)}
+        />
       )}
       {isAdmin && managementOpen && (
         <ParticipantManagement
