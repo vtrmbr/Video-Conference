@@ -160,6 +160,7 @@ function CallExperience({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [managementOpen, setManagementOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const { chatMessages, send: sendChatMessage, isSending: isSendingChatMessage } = useChat();
   const [participantRevision, setParticipantRevision] = useState(0);
   const [pendingAdmissions, setPendingAdmissions] = useState<PendingAdmission[]>([]);
@@ -175,7 +176,32 @@ function CallExperience({
   }, []);
   useKeyboardShortcuts(toggleDiagnostics);
 
-  const toggleChat = useCallback(() => setChatOpen((open) => !open), []);
+  // Tracks how many chat messages we'd already accounted for last time the effect below got called so we can tell how many are new
+  const previousChatMessageCount = useRef(0);
+  // Tracks the last number sent to setUnreadChatCount
+  const lastUnreadCountSent = useRef(0);
+
+  useEffect(() => {
+    const newMessageCount = chatMessages.length - previousChatMessageCount.current;
+    previousChatMessageCount.current = chatMessages.length;
+
+    if (newMessageCount > 0 && !chatOpen) {
+      const nextUnreadCount = lastUnreadCountSent.current + newMessageCount;
+      lastUnreadCountSent.current = nextUnreadCount;
+      setUnreadChatCount(nextUnreadCount);
+    }
+  }, [chatMessages.length, chatOpen]);
+
+  const toggleChat = useCallback(() => {
+    setChatOpen((open) => {
+      const nextOpen = !open;
+      if (nextOpen) {
+        lastUnreadCountSent.current = 0;
+        setUnreadChatCount(0);
+      }
+      return nextOpen;
+    });
+  }, []);
 
 
   useEffect(() => {
@@ -370,12 +396,20 @@ function CallExperience({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            className="ui-motion flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-xs font-medium text-zinc-200 hover:border-zinc-500 hover:bg-zinc-800"
+            className="ui-motion relative flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/70 px-3 py-2 text-xs font-medium text-zinc-200 hover:border-zinc-500 hover:bg-zinc-800"
             aria-label="Chat"
             title="Chat"
             onClick={toggleChat}
           >
             <MessageSquare size={15} />
+            {unreadChatCount > 0 && (
+              <span
+                className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[11px] font-bold text-black"
+                aria-label={`${unreadChatCount} novas mensagens`}
+              >
+                {unreadChatCount > 99 ? '+99' : unreadChatCount}
+              </span>
+            )}
           </button>
           <button
             type="button"
