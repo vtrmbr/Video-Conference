@@ -57,7 +57,7 @@ POST /api/token: emite token LiveKit.
 ```
 ### Estrutura do projeto V1.0.0
 ```
-Video-Conferencia-UFMG/
+Video-Conference/
 │
 ├── api/
 │   └── [...path].ts
